@@ -1,50 +1,27 @@
-# 使用多阶段构建减小镜像体积
-# 阶段1: 构建环境
-FROM python:3.10-alpine AS builder
+FROM python:3.10-slim-bullseye
 
-# 1. 替换为国内源
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+WORKDIR /app
 
-# 2. 安装编译工具和运行时依赖
-RUN apk add --no-cache \
-    build-base \
-    gcc \
-    musl-dev \
+# 安装系统依赖
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libssl-dev \
     libffi-dev \
-    openssl-dev 
-    # 常用库支持
+    && rm -rf /var/lib/apt/lists/*
 
-
-# 3. 设置清华源
+# 设置清华源
 RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
-# 4. 安装依赖
+# 复制依赖文件
 COPY requirements.txt .
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
 
-# -------------------------------
-# 阶段2: 生产环境
-FROM python:3.10-alpine
-
-# 从构建阶段复制已安装包
-COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
-COPY --from=builder /usr/bin /usr/bin
-
-
-# 设置工作目录和用户
-WORKDIR /app
-RUN adduser -D myuser
-USER myuser
+# 安装依赖（带重试和详细日志）
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir --retries 3 --timeout 60 -r requirements.txt || \
+    (echo "安装失败，显示错误日志:" && cat /root/.cache/pip/log/debug.log && exit 1)
 
 # 复制应用代码
-COPY --chown=myuser:myuser . .
+COPY . .
 
-# 清理环境变量避免干扰
-ENV PYTHONPATH=/usr/local/lib/python3.10/site-packages
-
-# 暴露端口
 EXPOSE 5000
-
-# 启动命令（使用 gunicorn）
 CMD ["gunicorn", "--workers", "4", "--bind", "0.0.0.0:5000", "app:app"]
