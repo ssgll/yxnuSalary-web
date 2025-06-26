@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工资查询</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="{{ url_for('static',filename='css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/bootstrap-icons.css') }}">
+
+
+    <!-- 自定义样式 -->
+    <style>
+        :root {
+            --primary: #3498db;
+            --primary-dark: #2980b9;
+            --secondary: #2c3e50;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --border: #e0e0e0;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background-color: #f5f7fa;
+            padding-bottom: 80px;
+            /* 为底部导航留出空间 */
+        }
+
+        /* 顶部导航栏 */
+        .app-header {
+            background: linear-gradient(135deg, var(--secondary), var(--dark));
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+        }
+
+        .app-title {
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .app-title i {
+            color: var(--primary);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* 内容容器 */
+        .app-container {
+            padding: 20px 15px;
+        }
+
+        /* 卡片样式 */
+        .salary-card {
+            border-radius: 16px;
+            border: none;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            transition: var(--transition);
+            background: white;
+        }
+
+        .salary-card:active {
+            transform: scale(0.98);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-top-left-radius: 16px !important;
+            border-top-right-radius: 16px !important;
+            padding: 20px;
+        }
+
+        .employee-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .employee-info {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* 工资概览 */
+        .salary-overview {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .total-amount {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 15px 0;
+        }
+
+        .salary-breakdown {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .breakdown-item {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 15px 10px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .breakdown-title {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .breakdown-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .breakdown-value.income {
+            color: var(--success);
+        }
+
+        /* 工资明细 */
+        .salary-details {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .details-title {
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            color: #666;
+        }
+
+        .detail-group {
+            margin-bottom: 15px;
+        }
+
+        .detail-category {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px dashed #eee;
+            cursor: pointer;
+        }
+
+        .detail-category .name {
+            font-weight: 500;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-category .value {
+            font-weight: 600;
+        }
+
+        .detail-category .value.positive {
+            color: var(--success);
+        }
+
+        .detail-category .value.negative {
+            color: var(--danger);
+        }
+
+        .detail-category .toggle-icon {
+            margin-left: 10px;
+        }
+
+        .sub-details {
+            display: none;
+            padding: 10px 0 5px 15px;
+        }
+
+        .sub-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .sub-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .sub-detail-name {
+            color: #666;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sub-detail-value {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .sub-detail-value.positive {
+            color: var(--success);
+        }
+
+        .sub-detail-value.negative {
+            color: var(--danger);
+        }
+
+        /* 月份选择卡片 */
+        .month-selector-card {
+            display: none;
+            padding: 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+        }
+
+        .month-list {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .month-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .month-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .month-item:last-child {
+            border-bottom: none;
+        }
+
+        .month-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .month-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .payment-date {
+            font-size: 0.9rem;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        .month-amount {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1030;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 5px;
+            color: #6c757d;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: var(--transition);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item .bi {
+            font-size: 1.4rem;
+            margin-bottom: 4px;
+        }
+
+        /* 操作按钮 */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 50px;
+            font-weight: 500;
+            text-align: center;
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            transition: var(--transition);
+        }
+
+        .action-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 575.98px) {
+            .employee-name {
+                font-size: 1.3rem;
+            }
+
+            .employee-info {
+                font-size: 0.8rem;
+            }
+
+            .app-container {
+                padding: 15px 10px;
+            }
+
+            .total-amount {
+                font-size: 1.8rem;
+            }
+
+            .breakdown-value {
+                font-size: 1.1rem;
+            }
+
+            .salary-breakdown {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="app-header py-2">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="app-title">
+                    <i class="bi bi-wallet2"></i>
+                    <span>工资查询</span>
+                </div>
+                <div class="user-avatar">
+                    {{ salary._parsed_data.get("职员姓名")[0] }}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容区域 -->
+    <main class="app-container">
+        <div class="container">
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+                <div class="action-btn active" id="show-salary-btn">
+                    <i class="bi bi-wallet"></i> 工资详情
+                </div>
+                <div class="action-btn" id="show-months-btn">
+                    <i class="bi bi-calendar-month"></i> 选择月份
+                </div>
+            </div>
+
+            <!-- 工资详情卡片 -->
+            <div class="salary-card" id="salary-card">
+                <div class="card-header">
+                    <div class="employee-name">{{ salary._parsed_data.get("职员姓名") }}</div>
+                    <div class="employee-info">
+                        <span>工号: {{ salary._parsed_data.get("职员姓名") }}</span>
+                        <span>部门: {{ salary._parsed_data.get("部门") }}</span>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="salary-overview">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0"><i class="bi bi-calendar-check"></i> {{ salary.time[:4] }}年{{
+                                salary.time[4:6] }}月工资</h5>
+                            <span class="badge bg-primary">第{{ salary.frequency }}次发放</span>
+                        </div>
+
+                        <!-- <div class="total-amount">¥13,700.00</div> -->
+
+                        <div class="salary-breakdown">
+                            {% for key,value in salary._parsed_data.items() %}
+                            {% if key in ["基础工资_实发","绩效工资_实发","劳务工资_实发"] %}
+                            <div class="breakdown-item">
+                                <div class="breakdown-title">{{ key }}</div>
+                                <div class="breakdown-value income">¥{{ value }}</div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="salary-details">
+                        <div class="details-header">
+                            <div class="details-title">
+                                <i class="bi bi-file-earmark-text"></i>
+                                <span>工资明细</span>
+                            </div>
+                            <div class="toggle-icon">▼</div>
+                        </div>
+                        <div class="details-content">
+                            {% for key,value in salary._parsed_data.items() %}
+                            {% if key not in ["基础工资_实发","绩效工资_实发","劳务工资_实发","职员姓名","职员代码","发放年度","发放次数","部门","发放日期"] %}
+                            <div class="detail-group">
+                                <div class="detail-category">
+                                    <div class="name">
+                                        <i class="bi bi-layers"></i>
+                                        {{ key }}
+                                    </div>
+                                    <!-- <div class="value positive">¥8,500</div> -->
+                                    <div class="toggle-icon">+</div>
+                                </div>
+                                <div class="sub-details">
+                                    {% for i in value %}
+                                        <div class="sub-detail-row">
+                                            <div class="sub-detail-name">
+                                                <i class="bi bi-circle"></i>
+                                                {{ i }}
+                                            </div>
+                                            {% if '扣减' in key or '扣除' in key or '减' in key or '税' in key %}
+                                                <div class="sub-detail-value negative">-¥{{ value.get(i) }}</div>
+                                            {% else %}
+                                                <div class="sub-detail-value positive">¥{{ value.get(i) }}</div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer py-3 px-4 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-calendar-event me-2"></i>
+                        <span>发放日期: {{ salary.time[:4] }}-{{ salary.time[4:6] }}-{{ salary.time[6:8] }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 月份选择卡片 -->
+            <div class="month-selector-card" id="month-selector-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0"><i class="bi bi-calendar-range"></i> 选择月份</h5>
+                    <button class="btn btn-sm btn-outline-primary" id="back-to-salary">
+                        <i class="bi bi-arrow-left me-1"></i> 返回
+                    </button>
+                </div>
+
+                <div class="month-list">
+                    {%for month in month_list %}
+                    <div class="month-item" data-month="{{ month[:4] }}-{{ month[4:6] }}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="month-info">
+                                <div class="month-name">{{ month[:4] }}年{{ month[4:6] }}月</div>
+                                <a href="{{ url_for('index.index',month=month) }}" style="text-decoration: none;">
+                                    <div class="payment-date">发放日期: {{ month[:4] }}-{{ month[4:6] }}-{{ month[6:8] }}</div>
+                                </a>
+                            </div>
+                            <!-- <div class="month-amount">¥13,700</div> -->
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 底部导航 -->
+    <!-- <nav class="bottom-nav">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <a href="#" class="nav-item active">
+                        <i class="bi bi-house-door"></i>
+                        <span>首页</span>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="#" class="nav-item">
+                        <i class="bi bi-clock-history"></i>
+                        <span>历史</span>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="#" class="nav-item">
+                        <i class="bi bi-graph-up"></i>
+                        <span>统计</span>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="#" class="nav-item">
+                        <i class="bi bi-person-circle"></i>
+                        <span>我的</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav> -->
+
+    <!-- jQuery -->
+    <script src="{{ url_for('static',filename='js/jquery-3.6.0.min.js') }}"></script>
+
+    <!-- Bootstrap JS 和依赖 -->
+    <script src="{{url_for('static',filename='js/bootstrap.bundle.min.js')}}"></script>
+
+    <script>
+        $(document).ready(function () {
+            // 工资详情展开/折叠功能
+            $('.details-header').click(function () {
+                const content = $(this).siblings('.details-content');
+                const icon = $(this).find('.toggle-icon');
+
+                content.slideToggle(300);
+                icon.text(content.is(':visible') ? '▲' : '▼');
+            });
+
+            // 工资项子项展开/折叠功能
+            $('.detail-category').click(function () {
+                const subDetails = $(this).siblings('.sub-details');
+                const icon = $(this).find('.toggle-icon');
+
+                subDetails.slideToggle(200);
+                icon.text(subDetails.is(':visible') ? '-' : '+');
+            });
+
+            // 显示月份选择卡片
+            $('#show-months-btn').click(function () {
+                $('#salary-card').hide();
+                $('#month-selector-card').show();
+                $('#show-salary-btn').removeClass('active');
+                $(this).addClass('active');
+            });
+
+            // 显示工资详情卡片
+            $('#show-salary-btn').click(function () {
+                $('#month-selector-card').hide();
+                $('#salary-card').show();
+                $('#show-months-btn').removeClass('active');
+                $(this).addClass('active');
+            });
+
+            // 月份选择返回按钮
+            $('#back-to-salary').click(function () {
+                $('#month-selector-card').hide();
+                $('#salary-card').show();
+                $('#show-months-btn').removeClass('active');
+                $('#show-salary-btn').addClass('active');
+            });
+
+            // 月份选择事件
+            $('.month-item').click(function () {
+                const month = $(this).data('month');
+                const monthName = $(this).find('.month-name').text();
+                const monthAmount = $(this).find('.month-amount').text();
+
+                // 更新工资卡片标题
+                $('#salary-card .salary-overview h5').html(`
+                    <i class="bi bi-calendar-check"></i> ${monthName}工资
+                    <span class="badge bg-primary">${month === '2023-12' ? '第12次发放' : '历史发放'}</span>
+                `);
+
+                // 更新总额显示
+                $('#salary-card .total-amount').text(monthAmount);
+
+                // 切换回工资卡片
+                $('#month-selector-card').hide();
+                $('#salary-card').show();
+                $('#show-months-btn').removeClass('active');
+                $('#show-salary-btn').addClass('active');
+            });
+        });
+    </script>
+</body>
+
+</html>

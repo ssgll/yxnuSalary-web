@@ -1,0 +1,36 @@
+DEFAULT: &default
+  DEBUG: false
+  LOG_LEVEL: 'INFO'
+  SECRET_KEY: 'I1FG1mL4TDW092'
+  SQLALCHEMY_DATABASE_URI: 'mysql+pymysql://ssgll:guojian@127.0.0.1:3306/salary'
+  SQLALCHEMY_TRACK_MODIFICATIONS: false
+  CAS_SERVER: 'https://cas.yxnu.edu.cn'
+  # CAS_AFTER_LOGIN: 'protected_page'
+  # CAS_VALIDATE_ROUTE: '/serviceValidate'
+  # 数据库连接池配置
+
+
+  SQLALCHEMY_ENGINE_OPTIONS:
+    pool_size: 10
+    max_overflow: 20
+    pool_timeout: 30
+    pool_recycle: 3600
+
+  SQLALCHEMY_BINDS:
+    local_db : 
+      url: "mysql+pymysql://ssgll:guojian@127.0.0.1:3306/salary"
+      pool_pre_ping: true
+      isolation_level: "READ COMMITTED"
+
+    salary_db : 
+      url: "oracle+oracledb://LY_DW:LY%24_DW@202.203.83.225:1521/orcl"
+      max_identifier_length: 128
+
+DEVELOPMENT:
+  <<: *default
+  PORT: 80
+  HOST: '0.0.0.0'
+  DEBUG: true
+  SQLALCHEMY_ECHO: true
+  DATABASE_USERNAME: 'ssgll'
+  DATABASE_PASSWORD: 'guojian'
