@@ -45,12 +45,10 @@ def create_app(env='DEFAULT'):
     return app
 
 # 创建应用
-app = create_app("DEVELOPMENT")
+app = create_app()
 
 
 
 if __name__ == "__main__":
     # print(app.config)
-    app.run(
-        host=app.config["HOST"]
-    )
+    app.run()

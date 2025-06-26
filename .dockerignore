@@ -11,3 +11,5 @@ venv
 .gitignore
 Dockerfile
 .dockerignore
+
+migrations
