@@ -59,6 +59,7 @@ def callback():
             next_url = url_for('index.index')  # 确保这里端点正确
             current_app.logger.debug(f"Callback: next_url is None, using default: {next_url}")
         current_app.logger.debug(f"Callback: next_url is None, using default: {next_url}")
+        current_app.logger.info("登录成功")
         return redirect(next_url) # 重定向到原始请求页面或默认页面
     except Exception as e:
         current_app.logger.exception("CAS validation error")
