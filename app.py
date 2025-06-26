@@ -3,7 +3,6 @@ import yaml
 from models import db,User
 from flask_migrate import Migrate
 from flask_login import LoginManager
-import json
 
 # app构造函数
 def create_app(env='DEFAULT'):
@@ -51,7 +50,7 @@ app = create_app("DEVELOPMENT")
 
 
 if __name__ == "__main__":
-    print(app.config)
+    # print(app.config)
     app.run(
         host=app.config["HOST"]
     )

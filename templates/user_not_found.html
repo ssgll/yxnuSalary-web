@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户不存在</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="{{ url_for('static',filename='css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/bootstrap-icons.css') }}">
+
+    <style>
+        :root {
+            --primary: #3498db;
+            --primary-dark: #2980b9;
+            --secondary: #2c3e50;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --danger: #e74c3c;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+        
+        .error-container {
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .error-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+        }
+        
+        .error-icon {
+            font-size: 6rem;
+            color: var(--danger);
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+        }
+        
+        .error-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+        
+        .error-message {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .error-details {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        
+        .error-details p {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .error-details i {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 50px;
+            padding: 12px 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-primary {
+            border-radius: 50px;
+            padding: 12px 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--light);
+        }
+        
+        .contact-info {
+            margin-top: 30px;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .contact-info a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 576px) {
+            .error-container {
+                padding: 30px 20px;
+            }
+            
+            .error-icon {
+                font-size: 4.5rem;
+            }
+            
+            .error-title {
+                font-size: 2rem;
+            }
+            
+            .error-message {
+                font-size: 1rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn-primary, .btn-outline-primary {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">
+            <i class="bi bi-person-x-fill"></i>
+        </div>
+        
+        <h1 class="error-title">用户[{{ user_id  }}]不存在</h1>
+        
+        <p class="error-message">
+            抱歉，您尝试访问的用户信息不存在或已被删除。
+        </p>
+        
+        <div class="error-details">
+            <p><i class="bi bi-info-circle"></i> 可能的原因：</p>
+            <p><i class="bi bi-dot"></i> 没有工资数据</p>
+            <p><i class="bi bi-dot"></i> 该用户已被管理员删除</p>
+            <p><i class="bi bi-dot"></i> 您访问的链接已过期</p>
+        </div>
+        
+        <!-- <div class="action-buttons">
+            <a href="/" class="btn btn-primary">
+                <i class="bi bi-house-door me-2"></i> 返回首页
+            </a>
+            <a href="/search" class="btn btn-outline-primary">
+                <i class="bi bi-search me-2"></i> 搜索用户
+            </a>
+        </div> -->
+        
+        <!-- <div class="contact-info">
+            需要帮助？请联系 <a href="mailto:support@salarysystem.com">support@salarysystem.com</a>
+        </div> -->
+    </div>
+    
+    <script>
+        // 添加一些简单的动画效果
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.error-container');
+            setTimeout(() => {
+                container.style.opacity = 1;
+                container.style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
