@@ -14,10 +14,10 @@ RUN apk add --no-cache \
     python3-dev;
 
 # 3. 强制使用官方源安装 Alembic
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple alembic==1.16.2
+# RUN pip install --no-cache-dir --index-url https://pypi.org/simple alembic==1.16.2
 
 # 4. 安装其他依赖（使用清华源）
-RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+RUN pip config set global.index-url http://mirrors.aliyun.com/pypi/simple
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
